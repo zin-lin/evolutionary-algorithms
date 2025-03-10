@@ -151,7 +151,7 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 	 */
 	private ArrayList<Individual> reproduce(Individual parent1, Individual parent2) {
 		ArrayList<Individual> children = new ArrayList<>();
-		double alpha = 0.75; // Blending factor
+		double alpha = 0.675; // Blending factor
 		Individual child1 = parent1.copy();
 		Individual child2 = parent2.copy();
 
@@ -202,7 +202,7 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 			int idx = getWorstIndex();
 			Individual worst = population.get(idx);
 			// for each iteration replaces only if the worst actually have a worse fitness then the best of the children generation
-			if (worst.fitness > best.fitness) {
+			if (worst.fitness > best.fitness ) {
 				population.set(idx, individual);
 			}
 		}
