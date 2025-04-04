@@ -11,7 +11,7 @@ import model.NeuralNetwork;
  * @author zin-lin-htun
  * 
  */
-public class EvolutionaryStrategy extends NeuralNetwork {
+public class GeneticAlgorithm extends NeuralNetwork {
 	
 
 	/**
@@ -133,7 +133,7 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 	 */
 	private Individual select() {
 		Individual best = null; // setting the best individual
-		int arena_size = 3; // tournament arena
+		int arena_size =3; // tournament arena
 		ArrayList<Individual>tournament = new ArrayList<>();
 
 		for (int i = 0; i < arena_size; ++i) {
@@ -151,25 +151,35 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 	 */
 	private ArrayList<Individual> reproduce(Individual parent1, Individual parent2) {
 		ArrayList<Individual> children = new ArrayList<>();
-		double alpha = 0.675; // Blending factor
+		double alpha = 0.75; // Decrease blending factor to ensure smoother offspring
+
 		Individual child1 = parent1.copy();
 		Individual child2 = parent2.copy();
 
 		for (int i = 0; i < parent1.chromosome.length; i++) {
-
 			double minGene = Math.min(parent1.chromosome[i], parent2.chromosome[i]);
 			double maxGene = Math.max(parent1.chromosome[i], parent2.chromosome[i]);
 			double range = maxGene - minGene;
 
-			child1.chromosome[i] = minGene + Parameters.random.nextDouble() * (range + (alpha * range)); // blend min
-			child2.chromosome[i] = maxGene - Parameters.random.nextDouble() * (range + (alpha * range)); // blend max value
+			// Blending with a reduced factor for finer adjustments
+			child1.chromosome[i] = minGene + Parameters.random.nextDouble() * (range + (alpha * range));
+			child2.chromosome[i] = maxGene - Parameters.random.nextDouble() * (range + (alpha * range));
 		}
 
 		children.add(child1);
 		children.add(child2);
 		return children;
-	} 
-	
+	}
+
+	// Preserve the best individual in each generation
+	private void elitism() {
+		// Find the best individual in the current population
+		Individual bestIndividual = getBest();
+		// Add the best individual to the next generation (we're adding to the next population)
+		population.add(bestIndividual.copy());
+	}
+
+
 	/**
 	 * Mutation
 	 * 
@@ -178,15 +188,15 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 	private void mutate(ArrayList<Individual> individuals) {		
 		for(Individual individual : individuals) {
 			for (int i = 0; i < individual.chromosome.length; i++) {
-				double reverseEvaluationFactor = 1 - (evaluations/Parameters.maxEvaluations); // REF, this will become lower over ticks
-				double mutationRate = Parameters.mutateRate * reverseEvaluationFactor; // this will become lower over ticks due to REF becoming lower
-				if (Parameters.random.nextDouble() < mutationRate) {
-					if (Parameters.random.nextBoolean()) {
-						individual.chromosome[i] += (Parameters.mutateChange);
+				double reverseEvaluationFactor =  ((double) evaluations /Parameters.maxEvaluations); // REF, this will become lower over ticks
+				double mutationRate = Parameters.mutateChange * 0.5;// this will become lower over ticks due to REF becoming lower
+
+					if (Parameters.random.nextDouble() < Parameters.mutateRate) {
+						individual.chromosome[i] += Parameters.random.nextGaussian()* (mutationRate) * reverseEvaluationFactor;
 					} else {
-						individual.chromosome[i] -= (Parameters.mutateChange);
+						individual.chromosome[i] -=  Parameters.random.nextGaussian()* mutationRate * reverseEvaluationFactor;
 					}
-				}
+
 			}
 		}		
 	}
@@ -202,13 +212,13 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 			int idx = getWorstIndex();
 			Individual worst = population.get(idx);
 			// for each iteration replaces only if the worst actually have a worse fitness then the best of the children generation
-			if (worst.fitness > best.fitness ) {
+			if (worst.fitness > individual.fitness ) {
 				population.set(idx, individual);
 			}
 		}
+
 	}
 
-	
 
 	/**
 	 * Returns the index of the worst member of the population
@@ -232,11 +242,11 @@ public class EvolutionaryStrategy extends NeuralNetwork {
 
 	@Override
 	public double activationFunction(double x) {
-		if (x < -20.0) {
-			return -1.0;
-		} else if (x > 20.0) {
-			return 1.0;
-		}
+//		if (x < -20.0) {
+//			return -1.0;
+//		} else if (x > 20.0) {
+//			return 1.0;
+//		}
 		return Math.tanh(x);
 	}
 }

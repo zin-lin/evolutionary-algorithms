@@ -9,6 +9,6 @@ mutateRate 	9.0E-4
 mutateChange 	5.0E-5
 seed 	1741390873602
 random 	java.util.Random@20b522d0
-neuralNetworkClass 	class coursework.EvolutionaryStrategy
+neuralNetworkClass 	class coursework.GeneticAlgorithm
 Training Set Training
 Fitness 0.0028959246261793794

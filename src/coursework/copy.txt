@@ -1,0 +1,99 @@
+package coursework;
+import java.util.ArrayList;
+import model.Fitness;
+import model.Individual;
+import model.LunarParameters.DataSet;
+import model.NeuralNetwork;
+
+
+public class ParticleSwarmOptimiser extends NeuralNetwork {
+    private ArrayList<Particle> swarm;
+    private double inertia = 0.65;      // Inertia weight
+    private double cognitive = 1.55;    // Personal best influence
+    private double social = 1.65;       // Global best influence
+
+    private class Particle {
+        Individual position;   // Particle position (neural network weights)
+        double[] velocity;     // Velocity vector
+        Individual pBest;      // Best position found by the particle
+
+        Particle() {
+            position = new Individual(); // Randomly initialized weights
+            velocity = new double[position.chromosome.length];
+            pBest = position.copy();
+        }
+    }
+
+    @Override
+    public void run() {
+        swarm = initializeSwarm();
+        best = getGlobalBest();
+
+        System.out.println("Initial Global Best: " + best.fitness);
+
+        while (evaluations < Parameters.maxEvaluations) {
+            for (Particle particle : swarm) {
+                updateVelocity(particle);
+                updatePosition(particle);
+                evaluateFitness(particle);
+            }
+
+            best = getGlobalBest();  // Update global best solution
+            outputStats();
+        }
+
+        saveNeuralNetwork(); // Save best network
+    }
+
+    private ArrayList<Particle> initializeSwarm() {
+        ArrayList<Particle> swarm = new ArrayList<>();
+        for (int i = 0; i < Parameters.popSize; i++) {
+            Particle particle = new Particle();
+            evaluateFitness(particle);
+            swarm.add(particle);
+        }
+        return swarm;
+    }
+
+    private void evaluateFitness(Particle particle) {
+        particle.position.fitness = Fitness.evaluate(particle.position, this);
+
+        // Update personal best
+        if (particle.position.fitness < particle.pBest.fitness) {
+            particle.pBest = particle.position.copy();
+        }
+    }
+
+    private Individual getGlobalBest() {
+        for (Particle particle : swarm) {
+            if (best == null || particle.position.fitness < best.fitness) {
+                best = particle.position.copy();
+            }
+        }
+        return best;
+    }
+
+    private void updateVelocity(Particle particle) {
+        for (int i = 0; i < particle.velocity.length; i++) {
+            double inertiaComponent = inertia * particle.velocity[i];
+            double cognitiveComponent = cognitive * Parameters.random.nextDouble() *
+                    (particle.pBest.chromosome[i] - particle.position.chromosome[i]);
+            double socialComponent = social * Parameters.random.nextDouble() *
+                    (best.chromosome[i] - particle.position.chromosome[i]);
+
+            particle.velocity[i] = inertiaComponent + cognitiveComponent + socialComponent;
+        }
+    }
+
+    private void updatePosition(Particle particle) {
+        for (int i = 0; i < particle.position.chromosome.length; i++) {
+            particle.position.chromosome[i] += particle.velocity[i];
+        }
+    }
+
+    @Override
+    public double activationFunction(double x) {
+
+        return Math.tanh(x);
+    }
+}

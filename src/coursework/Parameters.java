@@ -11,33 +11,35 @@ public class Parameters {
 	/**
 	 * These parameter values can be changed You may add other Parameters as
 	 * required to this class
-	 * 
+	 *
 	 */
-	private static int numHidden = 5;
+	private static int numHidden = 10;
 	private static int numGenes = calculateNumGenes();
-	public static double minGene = -165; // specifies minimum and maximum weight values
-	public static double maxGene = +165;
+	public static double minGene = -44; // specifies minimum and maximum weight values
+	public static double maxGene = +44;
 
-	public static int popSize = 145;
-	public static int maxEvaluations =60000;
+	public static int popSize = 78;
+	public static int maxEvaluations =20000;
 
 	// Parameters for mutation
 	// Rate = probability of changing a gene
 	// Change = the maximum +/- adjustment to the gene value
-	public static double mutateRate = 0.03; // 0.01 mutation rate for mutation operator
-	public static double mutateChange = 0.000290
+	public static double mutateRate = 0.005; // 0.01 mutation rate for mutation operator
+	public static double mutateChange = 0.0005
 			; // delta change for mutation operator
 
 	// Random number generator used throughout the application
 	public static long seed = System.currentTimeMillis();
-	public static Random random = new Random(seed);
+	public static long main_seed = 1743179468;
+	public static Random random = new Random(main_seed);
 
 	// set the NeuralNetwork class here to use your code from the GUI
-	public static Class neuralNetworkClass = EvolutionaryStrategy.class;
+	public static Class neuralNetworkClass = GeneticAlgorithm.class;
+
 
 	/**
 	 * Do not change any methods that appear below here.
-	 * 
+	 *
 	 */
 
 	public static int getNumGenes() {

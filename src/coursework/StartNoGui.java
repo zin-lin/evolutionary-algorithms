@@ -5,7 +5,7 @@ import model.LunarParameters.DataSet;
 import model.NeuralNetwork;
 
 /**
- * Example of how to to run the {@link EvolutionaryStrategy} without the need for the GUI
+ * Example of how to to run the {@link GeneticAlgorithm} without the need for the GUI
  * This allows you to conduct multiple runs programmatically 
  * The code runs faster when not required to update a user interface
  *
@@ -33,7 +33,7 @@ public class StartNoGui {
 		
 		
 		//Create a new Neural Network Trainer Using the above parameters 
-		NeuralNetwork nn = new EvolutionaryStrategy();
+		NeuralNetwork nn = new GeneticAlgorithm();
 		
 		//train the neural net (Go and make a coffee) 
 		nn.run();
