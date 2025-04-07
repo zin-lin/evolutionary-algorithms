@@ -44,10 +44,12 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
         social = 1.25 -  (0.2 * ((double) evaluations / Parameters.maxEvaluations));
         cognitive = 1.25 + (0.2 * ((double) evaluations / Parameters.maxEvaluations));
         System.out.println("Initial Global Best: " + best.fitness);
+        System.out.println("Initial Social: " + social);
 
         // run as per evaluations
         // rules set eval == 20000
         while (evaluations < Parameters.maxEvaluations) {
+
             for (Particle particle : swarm) {
                 updateVelocity(particle);
                 updatePosition(particle);
