@@ -8,8 +8,8 @@ import model.NeuralNetwork;
 
 /**
  * Implements a basic Evolutionary Algorithm to train a Neural Network
- * @author zin-lin-htun
- * 
+ * @author kevin-sim
+ * @author-modifier zin-lin-htun
  */
 public class GeneticAlgorithm extends NeuralNetwork {
 	
@@ -31,7 +31,7 @@ public class GeneticAlgorithm extends NeuralNetwork {
 		 */		
 		
 		while (evaluations < Parameters.maxEvaluations) {
-
+			reset();
 			/**
 			 * this is a skeleton EA - you need to add the methods.
 			 * You can also change the EA if you want 
@@ -68,6 +68,20 @@ public class GeneticAlgorithm extends NeuralNetwork {
 		saveNeuralNetwork();
 	}
 
+	// reinitialise some individual to escape local optima fast
+	private void reset() {
+		// System.out.println("Resetting Global Called");
+		if ( this.evaluations >= 2000 && this.evaluations % 200 == 0) {
+			System.out.println("Resetting called");
+			if (this.best.fitness >= 0.06) {
+				System.out.println("Reset situation met");
+
+				System.out.println("Reset called bad seed");
+				System.out.println("Reset Global Best: " + best.fitness);
+				// previous = best.fitness;
+			}
+		}
+	}
 
 	/**
 	 * Sets the fitness of the individuals passed as parameters (whole population)
@@ -111,6 +125,7 @@ public class GeneticAlgorithm extends NeuralNetwork {
 		return population;
 	}
 
+	// find best in a tournament
 	private Individual getBestInTournament(ArrayList<Individual> tournament) {
 		best = null;
 		for  (Individual individual : tournament) {
@@ -126,9 +141,7 @@ public class GeneticAlgorithm extends NeuralNetwork {
 
 	/**
 	 * Selection --
-	 * 
-	 * NEEDS REPLACED with proper selection this just returns a copy of a random
-	 * adding tournement selection method
+	 * adding tournement selection method with arena size of 3
 	 * member of the population
 	 */
 	private Individual select() {
@@ -204,7 +217,7 @@ public class GeneticAlgorithm extends NeuralNetwork {
 	/**
 	 * 
 	 * Replaces the worst member of the population compared with the best of the latest iterated generation of children
-	 * (regardless of fitness)
+	 * with elitism
 	 * 
 	 */
 	private void replace(ArrayList<Individual> individuals) {

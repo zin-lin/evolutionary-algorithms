@@ -31,7 +31,7 @@ public class Parameters {
 	// Random number generator used throughout the application
 	public static long seed = System.currentTimeMillis();
 	public static long main_seed = 1743179468;
-	public static Random random = new Random(main_seed);
+	public static Random random = new Random(seed);
 
 	// set the NeuralNetwork class here to use your code from the GUI
 	public static Class neuralNetworkClass = ParticleSwarmOptimiser.class;

@@ -9,6 +9,8 @@ import model.Individual;
 import model.LunarParameters.DataSet;
 import model.NeuralNetwork;
 
+import static java.lang.Math.abs;
+
 /*
  *
  */
@@ -17,6 +19,7 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
     private double inertia = .76;      // Inertia weight
     private double cognitive = 1.25;    // Personal best influence
     private double social = 1.25;       // Global best influence
+    private double previous = 100;
 
     // inner class de Particle
     private class Particle {
@@ -39,8 +42,10 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
         // create global best solution
         best = getGlobalBest();
 
+        this.previous = best.fitness;
+
         // introduce particle inertia and social influence factor and self/cognitive influence factor
-        inertia = 0.80 - (0.5 * ((double) evaluations / Parameters.maxEvaluations));
+        inertia = 0.75 - (0.5 * ((double) evaluations / Parameters.maxEvaluations));
         social = 1.25 -  (0.2 * ((double) evaluations / Parameters.maxEvaluations));
         cognitive = 1.25 + (0.2 * ((double) evaluations / Parameters.maxEvaluations));
         System.out.println("Initial Global Best: " + best.fitness);
@@ -49,6 +54,8 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
         // run as per evaluations
         // rules set eval == 20000
         while (evaluations < Parameters.maxEvaluations) {
+
+            reset();
 
             for (Particle particle : swarm) {
                 updateVelocity(particle);
@@ -66,6 +73,39 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
         saveNeuralNetwork(); // Save best network
     }
 
+    /**
+     * reset
+     */
+    private void reset() {
+        // System.out.println("Resetting Global Called");
+        if ( this.evaluations >= 2000 && this.evaluations % 200 == 0) {
+            System.out.println("Resetting called");
+            if (this.best.fitness >= 0.06) {
+                System.out.println("Reset situation met");
+                reinitializeSwarm();
+                System.out.println("Reset called bad seed");
+                System.out.println("Reset Global Best: " + best.fitness);
+                previous = best.fitness;
+            }
+            else {
+                ArrayList<Particle> newSwarm = new ArrayList<>();
+                int count = 0;
+                for (Particle particle: swarm) {
+
+                    if (Parameters.mutateRate <= Parameters.random.nextDouble()) {
+                        Particle newParticle = new Particle();
+                        evaluateFitness(newParticle);
+                        newSwarm.add(newParticle);
+                        count++;
+                    }
+                    else {
+                        newSwarm.add(particle);
+                    }
+                }
+                this.swarm = newSwarm;
+            }
+        }
+    }
     // initialise swarm at the start of the run: adding population
     private ArrayList<Particle> initializeSwarm() {
         ArrayList<Particle> swarm = new ArrayList<>();
@@ -76,6 +116,51 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
             swarm.add(particle);
         }
         return swarm;
+    }
+    // re-initialising
+    private void reinitializeSwarm() {
+        ArrayList<Particle> newSwarm = new ArrayList<>();
+        int count = 0;
+        for (Particle particle: swarm) {
+
+            if (Parameters.mutateRate > Parameters.random.nextDouble()) {
+                Particle newParticle = new Particle();
+                evaluateFitness(newParticle);
+                newSwarm.add(newParticle);
+                count++;
+            }
+            else {
+                newSwarm.add(particle);
+            }
+        }
+        this.swarm = newSwarm;
+        System.out.println("Reinitialized particle number: " + count);
+    }
+
+    // escape the infamous local optima
+    private void escapeLocalOptima() {
+        double now = best.fitness;
+        if (((previous - now ) < 0.005) && evaluations > 10000){
+            ArrayList<Particle> newSwarm = new ArrayList<>();
+            // add population
+            for (Particle particle : swarm) {
+
+                if (Parameters.mutateRate < Parameters.random.nextGaussian()) {
+                    if (particle.position.fitness == best.fitness) {
+                        newSwarm.add(particle);
+                        continue;
+                    }
+                    Particle newParticle = new Particle();
+                    evaluateFitness(newParticle);
+                    newSwarm.add(newParticle);
+                } else {
+                    newSwarm.add(particle);
+                }
+
+            }
+            swarm =  newSwarm;
+        }
+        previous = now;
     }
 
     // evaluating fitness
@@ -99,6 +184,20 @@ public class ParticleSwarmOptimiser extends NeuralNetwork {
 
         return best;
     }
+
+    // global best solution
+    private Particle getGlobalBestAsParticle() {
+        // check for the best
+        Particle pbest = new Particle();
+        for (Particle particle : swarm) {
+            if (best == null || particle.position.fitness < best.fitness) {
+                pbest = particle;
+            }
+        }
+
+        return pbest;
+    }
+
 
     // update particle velocity
     private void updateVelocity(Particle particle) {
